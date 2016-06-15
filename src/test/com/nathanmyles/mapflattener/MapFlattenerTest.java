@@ -2,6 +2,8 @@ package com.nathanmyles.mapflattener;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -13,8 +15,12 @@ public class MapFlattenerTest {
     public void testFlattenMap() throws Exception {
         MapFlattener mapFlattener = new MapFlattener();
 
+        Map<String, Object> nestedListMap = new TreeMap<String, Object>();
+        nestedListMap.put("six", 6);
+        nestedListMap.put("sixList", Arrays.asList(7, 8, 9));
         Map<String, Object> nestedMap = new TreeMap<String, Object>();
         nestedMap.put("three", 2);
+        nestedMap.put("threeList", Arrays.asList(1, 2, 3, nestedListMap));
         Map<String, Object> nestedTwiceMap = new TreeMap<String, Object>();
         nestedTwiceMap.put("five", 5);
         nestedMap.put("four", nestedTwiceMap);
@@ -26,9 +32,23 @@ public class MapFlattenerTest {
 
         assertTrue(flattenedMap.containsKey("one"));
         assertTrue(flattenedMap.containsKey("two.three"));
+        assertTrue(flattenedMap.containsKey("two.threeList[0]"));
+        assertTrue(flattenedMap.containsKey("two.threeList[1]"));
+        assertTrue(flattenedMap.containsKey("two.threeList[2]"));
+        assertTrue(flattenedMap.containsKey("two.threeList[3].six"));
+        assertTrue(flattenedMap.containsKey("two.threeList[3].sixList[0]"));
+        assertTrue(flattenedMap.containsKey("two.threeList[3].sixList[1]"));
+        assertTrue(flattenedMap.containsKey("two.threeList[3].sixList[2]"));
         assertTrue(flattenedMap.containsKey("two.four.five"));
         assertEquals(flattenedMap.get("one"), 1);
         assertEquals(flattenedMap.get("two.three"), 2);
+        assertEquals(flattenedMap.get("two.threeList[0]"), 1);
+        assertEquals(flattenedMap.get("two.threeList[1]"), 2);
+        assertEquals(flattenedMap.get("two.threeList[2]"), 3);
+        assertEquals(flattenedMap.get("two.threeList[3].six"), 6);
+        assertEquals(flattenedMap.get("two.threeList[3].sixList[0]"), 7);
+        assertEquals(flattenedMap.get("two.threeList[3].sixList[1]"), 8);
+        assertEquals(flattenedMap.get("two.threeList[3].sixList[2]"), 9);
         assertEquals(flattenedMap.get("two.four.five"), 5);
 
     }
@@ -39,24 +59,68 @@ public class MapFlattenerTest {
 
         Map<String, Object> flattenedMap = new TreeMap<String, Object>();
         flattenedMap.put("one", 1);
+        flattenedMap.put("oneList[0]", 1);
+        flattenedMap.put("oneList[1]", 2);
+        flattenedMap.put("oneList[2]", 3);
         flattenedMap.put("two.three", 2);
+        flattenedMap.put("two.threeList[0]", 1);
+        flattenedMap.put("two.threeList[1]", 2);
+        flattenedMap.put("two.threeList[2]", 3);
+        flattenedMap.put("two.threeList[3].six", 6);
+        flattenedMap.put("two.threeList[3].sixList[0]", 7);
+        flattenedMap.put("two.threeList[3].sixList[1]", 8);
+        flattenedMap.put("two.threeList[3].sixList[2]", 9);
         flattenedMap.put("two.four.five", 5);
-        flattenedMap.put("two.four.six", 6);
+        flattenedMap.put("two.four.seven", 7);
+        flattenedMap.put("two.four.eight.nine", 9);
+        flattenedMap.put("two.four.eight.ten", 10);
 
         Map<String, Object> map = mapFlattener.expandMap(flattenedMap);
 
         assertTrue(map.containsKey("one"));
+        assertTrue(map.containsKey("oneList"));
+        assertTrue(map.get("oneList") instanceof List);
+        List<Object> listOne = (List<Object>) map.get("oneList");
+        assertEquals(listOne.get(0), 1);
+        assertEquals(listOne.get(1), 2);
+        assertEquals(listOne.get(2), 3);
         assertTrue(map.containsKey("two"));
         assertEquals(map.get("one"), 1);
         assertTrue(map.get("two") instanceof Map);
-        assertTrue(((Map<String, Object>) map.get("two")).containsKey("three"));
-        assertTrue(((Map<String, Object>) map.get("two")).containsKey("four"));
-        assertEquals(((Map<String, Object>) map.get("two")).get("three"), 2);
-        assertTrue(((Map<String, Object>) map.get("two")).get("four") instanceof Map);
-        assertTrue(((Map<String, Object>) ((Map<String, Object>) map.get("two")).get("four")).containsKey("five"));
-        assertTrue(((Map<String, Object>) ((Map<String, Object>) map.get("two")).get("four")).containsKey("six"));
-        assertEquals(((Map<String, Object>) ((Map<String, Object>) map.get("two")).get("four")).get("five"), 5);
-        assertEquals(((Map<String, Object>) ((Map<String, Object>) map.get("two")).get("four")).get("six"), 6);
+        Map<String, Object> mapTwo = (Map<String, Object>) map.get("two");
+        assertTrue(mapTwo.containsKey("three"));
+        assertTrue(mapTwo.containsKey("threeList"));
+        assertTrue(mapTwo.containsKey("four"));
+        assertEquals(mapTwo.get("three"), 2);
+        assertTrue(mapTwo.get("threeList") instanceof List);
+        List<Object> listThree = (List<Object>) mapTwo.get("threeList");
+        assertEquals(listThree.get(0), 1);
+        assertEquals(listThree.get(1), 2);
+        assertEquals(listThree.get(2), 3);
+        assertTrue(listThree.get(3) instanceof Map);
+        Map<String, Object> listThreeMapSix = (Map<String, Object>) listThree.get(3);
+        assertTrue(listThreeMapSix.containsKey("six"));
+        assertTrue(listThreeMapSix.containsKey("sixList"));
+        assertEquals(listThreeMapSix.get("six"), 6);
+        assertTrue(listThreeMapSix.get("sixList") instanceof List);
+        List<Object> ListSix = (List<Object>) listThreeMapSix.get("sixList");
+        assertEquals(ListSix.get(0), 7);
+        assertEquals(ListSix.get(1), 8);
+        assertEquals(ListSix.get(2), 9);
+        assertTrue(mapTwo.get("four") instanceof Map);
+        Map<String, Object> mapFour = (Map<String, Object>) mapTwo.get("four");
+        assertTrue(mapFour.containsKey("five"));
+        assertTrue(mapFour.containsKey("seven"));
+        assertTrue(mapFour.containsKey("eight"));
+        assertEquals(mapFour.get("five"), 5);
+        assertEquals(mapFour.get("seven"), 7);
+        assertTrue(mapFour.get("eight") instanceof Map);
+        Map<String, Object> mapEight = (Map<String, Object>) mapFour.get("eight");
+        assertTrue(mapEight.containsKey("nine"));
+        assertTrue(mapEight.containsKey("ten"));
+        assertEquals(mapEight.get("nine"), 9);
+        assertEquals(mapEight.get("ten"), 10);
+
     }
 
     @Test

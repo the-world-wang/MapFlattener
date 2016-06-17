@@ -11,15 +11,36 @@ import static org.junit.Assert.*;
 
 public class MapFlattenerTest {
 
+    // flatten a map
     @Test
     public void testFlattenMap() throws Exception {
         MapFlattener mapFlattener = new MapFlattener();
 
+        /**
+         * build up a nested map
+         *
+         * {
+         *     "one": 1,
+         *     "two": {
+         *         "three": 2,
+         *         "threeList": [
+         *             1, 2, 3, {
+         *                 "six": 6,
+         *                 "sixList": [7, 8, 9]
+         *             }
+         *         ],
+         *         "four": {
+         *             "five": 5
+         *         }
+         *     }
+         * }
+         *
+         */
         Map<String, Object> nestedListMap = new TreeMap<String, Object>();
         nestedListMap.put("six", 6);
         nestedListMap.put("sixList", Arrays.asList(7, 8, 9));
         Map<String, Object> nestedMap = new TreeMap<String, Object>();
-        nestedMap.put("three", 2);
+        nestedMap.put("three", 3);
         nestedMap.put("threeList", Arrays.asList(1, 2, 3, nestedListMap));
         Map<String, Object> nestedTwiceMap = new TreeMap<String, Object>();
         nestedTwiceMap.put("five", 5);
@@ -28,8 +49,10 @@ public class MapFlattenerTest {
         map.put("one", 1);
         map.put("two", nestedMap);
 
+        // flatten it!
         Map<String, Object> flattenedMap = mapFlattener.flattenMap(map);
 
+        // now the map is no longer nested and all the values are available at the following keys:
         assertTrue(flattenedMap.containsKey("one"));
         assertTrue(flattenedMap.containsKey("two.three"));
         assertTrue(flattenedMap.containsKey("two.threeList[0]"));
@@ -41,7 +64,7 @@ public class MapFlattenerTest {
         assertTrue(flattenedMap.containsKey("two.threeList[3].sixList[2]"));
         assertTrue(flattenedMap.containsKey("two.four.five"));
         assertEquals(flattenedMap.get("one"), 1);
-        assertEquals(flattenedMap.get("two.three"), 2);
+        assertEquals(flattenedMap.get("two.three"), 3);
         assertEquals(flattenedMap.get("two.threeList[0]"), 1);
         assertEquals(flattenedMap.get("two.threeList[1]"), 2);
         assertEquals(flattenedMap.get("two.threeList[2]"), 3);
@@ -50,13 +73,14 @@ public class MapFlattenerTest {
         assertEquals(flattenedMap.get("two.threeList[3].sixList[1]"), 8);
         assertEquals(flattenedMap.get("two.threeList[3].sixList[2]"), 9);
         assertEquals(flattenedMap.get("two.four.five"), 5);
-
     }
 
+    // expand a map
     @Test
     public void testExpandMap() throws Exception {
         MapFlattener mapFlattener = new MapFlattener();
 
+        // take a map that has been flatten
         Map<String, Object> flattenedMap = new TreeMap<String, Object>();
         flattenedMap.put("one", 1);
         flattenedMap.put("oneList[0]", 1);
@@ -75,8 +99,10 @@ public class MapFlattenerTest {
         flattenedMap.put("two.four.eight.nine", 9);
         flattenedMap.put("two.four.eight.ten", 10);
 
+        // expand it!
         Map<String, Object> map = mapFlattener.expandMap(flattenedMap);
 
+        // now the map is nested again
         assertTrue(map.containsKey("one"));
         assertTrue(map.containsKey("oneList"));
         assertTrue(map.get("oneList") instanceof List);
@@ -123,6 +149,7 @@ public class MapFlattenerTest {
 
     }
 
+    // use a different separator to flatten
     @Test
     public void testFlattenMapWithSeparator() throws Exception {
         MapFlattener mapFlattener = new MapFlattener();
@@ -142,6 +169,7 @@ public class MapFlattenerTest {
         assertEquals(flattenedMap.get("two$three"), 2);
     }
 
+    // use a different separator to expand
     @Test
     public void testExpandMapWithSeparator() throws Exception {
         MapFlattener mapFlattener = new MapFlattener();

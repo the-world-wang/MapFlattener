@@ -6,6 +6,29 @@ Convert nested Maps into flat Maps and then expand them back!
 
 [![Coverage Status](https://coveralls.io/repos/github/nathanmyles/MapFlattener/badge.svg?branch=master)](https://coveralls.io/github/nathanmyles/MapFlattener?branch=master)
 
+### Easy to use
+
+Create an instance on the MapFlattener class
+```java
+MapFlattener mapFlattener = new MapFlattener();
+```
+
+By default key concatenation uses dots, but you can override this like so
+```java
+mapFlattener.withSeparator("$");
+```
+
+Now you can start flattening and expanding maps
+```java
+// flatten it!
+Map<String, Object> flattenedMap = mapFlattener.flattenMap(map);
+
+// expand it!
+Map<String, Object> map = mapFlattener.expandMap(flattenedMap);
+```
+
+Check out the tests for more examples
+
 ### Pull it from Maven Central!
 
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.nathanmyles/mapflattener/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.nathanmyles/mapflattener)

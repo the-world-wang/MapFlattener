@@ -8,6 +8,8 @@ Convert nested Maps into flat Maps and then expand them back!
 
 ### Pull it from Maven Central!
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.nathanmyles/mapflattener/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.nathanmyles/mapflattener)
+
 You can pull from the central maven repository, just add this to your __pom.xml__ file's `<dependencies>` section:
 
 ```xml

@@ -46,14 +46,13 @@ public class MapFlattener {
             } else {
                 flatKey = entry.getKey();
             }
+            flatMap.put(flatKey, entry.getValue());
             if (entry.getValue() instanceof Map) {
                 Map<String, Object> valueMap = (Map<String, Object>) entry.getValue();
                 flatMap = flattenMap(flatKey, valueMap, flatMap);
             } else if (entry.getValue() instanceof List) {
                 List<Object> valueList = (List<Object>) entry.getValue();
                 flatMap = flattenList(flatKey, valueList, flatMap);
-            } else {
-                flatMap.put(flatKey, entry.getValue());
             }
         }
         return flatMap;
